@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator for Clickable Links</title>
+    <style>
+        .qr-container {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<h2>Generate a Single QR Code with Clickable Links</h2>
+
+<!-- Input field to add multiple links -->
+<textarea id="qrLinks" rows="5" cols="50" placeholder="Enter URLs, one per line"></textarea><br><br>
+
+<!-- Button to generate the QR Code -->
+<button onclick="generateQRCode()">Generate QR Code</button>
+
+<!-- Download link for the generated page -->
+<a id="downloadLink" class="hidden" download="links.html">Download the Generated Page with Clickable Links</a>
+
+<!-- Container for displaying the QR code -->
+<div id="qrContainer" class="qr-container">
+    <div id="qrcode"></div>
+</div>
+
+<script>
+    function generateQRCode() {
+        // Get the input from the textarea and split it by line
+        var qrText = document.getElementById("qrLinks").value;
+        var qrLinks = qrText.split('\n').filter(link => link.trim() !== ""); // Filter out empty lines
+
+        // If no valid links are entered, display an alert and return early
+        if (qrLinks.length === 0) {
+            alert("Please enter at least one valid URL.");
+            return;
+        }
+
+        // Create a basic HTML structure with clickable links
+        var htmlContent = `<html><head><title>Clickable Links</title></head><body><h1>Here are your links:</h1><ul>`;
+        qrLinks.forEach(function(link) {
+            htmlContent += `<li><a href="${link.trim()}" target="_blank">${link.trim()}</a></li>`;
+        });
+        htmlContent += `</ul></body></html>`;
+
+        // Check if htmlContent is valid before creating the Blob
+        if              (htmlContent && htmlContent.length > 0) {
+            var blob = new Blob([htmlContent], { type: "text/html" });
+
+            // Create a URL for the Blob and attach it to the download link
+            var downloadLink = document.getElementById("downloadLink");
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.classList.remove("hidden");
+
+            // Clear any existing QR code
+            var qrCodeDiv = document.getElementById("qrcode");
+            qrCodeDiv.innerHTML = "";
+
+            // Create a QR code linking to the downloadable HTML file
+            new QRCode(qrCodeDiv, {
+                text: downloadLink.href,  // The URL of the downloadable page
+                width: 200,
+                height: 200
+            });
+        } else {
+            console.error("Error: HTML content is null or invalid.");
+        }
+    }
+</script>
+
+</body>
+</html>
